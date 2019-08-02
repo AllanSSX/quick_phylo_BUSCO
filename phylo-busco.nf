@@ -2,8 +2,11 @@
 // PIPELINE INPUT PARAMETERS 
 //------------------------------------------
 
+import ParamsHelper
+
 params.indir = "."
 params.outdir = "results"
+ParamsHelper.checkNonEmptyParam(params.species, "species");
 
 BUSCOodb = params.odb
 augustusConfig = params.augustus
@@ -77,7 +80,7 @@ process filter_single_copy {
 	// add a limitation on -s option in order than it can be superior to the number of input fasta
 	script:
 	"""
-	single_copies_busco.py -f ${fasta} -s 3
+	single_copies_busco.py -f ${fasta} -s params.species
 	"""		
 }
 
@@ -169,10 +172,10 @@ process FASconCAT {
 	publishDir "${params.outdir}/5-cat", mode: 'copy'
 	
 	input:
-	file gblocks from busco_single_copy_proteins_toFASconCAT
+	file gblocks from busco_single_copy_proteins_toFASconCAT.collect()
 	
 	output:
-	file "FcC_smatrix.fas" into busco_single_copy_proteins_toProTest.colletct()
+	file "FcC_smatrix.fas" into busco_single_copy_proteins_toProTest
 	
 	script:
 	"""
