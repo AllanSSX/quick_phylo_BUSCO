@@ -63,6 +63,8 @@ process concat_busco {
 // Filter in order to keep at least a minimum of X species which shared a single copy gene (give a list of sequence ID)
 process filter_single_copy {
 	
+	//module 'anaconda3/conda3'
+	
 	publishDir "${params.outdir}/2-single-copy", mode: 'copy'
 	
 	input:
@@ -70,6 +72,7 @@ process filter_single_copy {
 	
 	output:
 	file "*.lst" into busco_single_copy_proteins_list mode flatten
+	// flatten to allow parallelization at the next step
 	
 	// add a limitation on -s option in order than it can be superior to the number of input fasta
 	script:
@@ -114,11 +117,14 @@ process mafft {
 	script:
 	"""
 	mafft --auto ${faa} > ${faa}.mafft
+	sleep 4
 	"""
 }
 
 // Clean the alignment
 process gblocks {
+	// As Gblocks exit status is always 1...
+	validExitStatus 1
 	
 	module 'Gblocks/0.91b'
 	
@@ -166,7 +172,7 @@ process FASconCAT {
 	file gblocks from busco_single_copy_proteins_toFASconCAT
 	
 	output:
-	file "FcC_smatrix.fas" into busco_single_copy_proteins_toProTest
+	file "FcC_smatrix.fas" into busco_single_copy_proteins_toProTest.colletct()
 	
 	script:
 	"""
@@ -192,5 +198,3 @@ process ProtTest {
 	prottest3 -i ${matrix} -all-distributions -F -AIC -BIC -tc 0.5 -o prottest.txt -threads ${params.prottest.cpus}
 	"""
 }
-
-
