@@ -74,7 +74,7 @@ process filter_single_copy {
 	file fasta from busco_single_copy_proteins_concat
 	
 	output:
-	file "*.lst" into busco_single_copy_proteins_list mode flatten
+	file "*.lst" into busco_single_copy_proteins_list //mode flatten
 	// flatten to allow parallelization at the next step
 	
 	// add a limitation on -s option in order than it can be superior to the number of input fasta
@@ -92,7 +92,7 @@ process seqtk {
 	publishDir "${params.outdir}/2-single-copy", mode: 'copy'
 	
 	input:
-	file lst from busco_single_copy_proteins_list
+	file lst from busco_single_copy_proteins_list.flatten()
 	file fasta from busco_single_copy_proteins_concat
 
 	output:
